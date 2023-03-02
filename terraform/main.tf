@@ -1,21 +1,21 @@
 # lambda function that proceses incoming webhooks from github, verifies signature
 # and publishes to sns
 resource "aws_lambda_function" "codebuild_github_status" {
-  function_name = "${var.name}"
+  function_name = var.name
   description   = "update github status via codebuild events"
-  role          = "${aws_iam_role.codebuild_github_status.arn}"
+  role          = aws_iam_role.codebuild_github_status.arn
   handler       = "index.handler"
-  memory_size   = "${var.memory_size}"
-  timeout       = "${var.timeout}"
+  memory_size   = var.memory_size
+  timeout       = var.timeout
   runtime       = "nodejs12.x"
-  s3_bucket     = "${var.s3_bucket}"
-  s3_key        = "${var.s3_key}"
+  s3_bucket     = var.s3_bucket
+  s3_key        = var.s3_key
 
   environment {
     variables = {
-      "CONFIG_PARAMETER_NAMES" = "${var.config_parameter_names}"
-      "DEBUG"                  = "${var.debug}"
-      "NODE_ENV"               = "${var.node_env}"
+      "CONFIG_PARAMETER_NAMES" = var.config_parameter_names
+      "DEBUG"                  = var.debug
+      "NODE_ENV"               = var.node_env
     }
   }
 }
