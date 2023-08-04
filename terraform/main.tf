@@ -62,7 +62,7 @@ data "aws_iam_policy_document" "codebuild_github_status" {
     effect = "Allow"
 
     resources = [
-      "${join(",",formatlist("arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter%s", split(",", "${var.config_parameter_names}")))}",
+      join(",",formatlist("arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter%s", split(",", var.config_parameter_names))),
     ]
   }
 
