@@ -28,8 +28,8 @@ resource "aws_cloudwatch_log_group" "codebuild_github_status" {
 
 # iam role for publish lambda function
 resource "aws_iam_role" "codebuild_github_status" {
-  name               = "${var.name}"
-  assume_role_policy = "${data.aws_iam_policy_document.assume_role.json}"
+  name               = var.name
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
 data "aws_iam_policy_document" "assume_role" {
@@ -47,8 +47,8 @@ data "aws_iam_policy_document" "assume_role" {
 # iam policy for lambda function allowing it to trigger builds for all
 # codebuild projects
 resource "aws_iam_policy" "codebuild_github_status" {
-  name   = "${var.name}"
-  policy = "${data.aws_iam_policy_document.codebuild_github_status.json}"
+  name   = var.name
+  policy = data.aws_iam_policy_document.codebuild_github_status.json
 }
 
 data "aws_iam_policy_document" "codebuild_github_status" {
@@ -81,7 +81,7 @@ data "aws_iam_policy_document" "codebuild_github_status" {
 
 # attach trigger policy to trigger role
 resource "aws_iam_policy_attachment" "codebuild_github_status" {
-  name       = "${var.name}"
-  roles      = ["${aws_iam_role.codebuild_github_status.name}"]
-  policy_arn = "${aws_iam_policy.codebuild_github_status.arn}"
+  name       = var.name
+  roles      = [aws_iam_role.codebuild_github_status.name]
+  policy_arn = aws_iam_policy.codebuild_github_status.arn
 }
