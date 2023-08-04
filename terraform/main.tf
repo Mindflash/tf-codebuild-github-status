@@ -7,7 +7,7 @@ resource "aws_lambda_function" "codebuild_github_status" {
   handler       = "index.handler"
   memory_size   = var.memory_size
   timeout       = var.timeout
-  runtime       = "nodejs18.x"
+  runtime       = "nodejs16.x"
   s3_bucket     = var.s3_bucket
   s3_key        = var.s3_key
 
