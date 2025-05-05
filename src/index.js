@@ -62,7 +62,7 @@ export async function processEvent(e, { config, github, log }) {
   const context = config.get('context', 'aws/codebuild');
   if (type === 'CodeBuild Build Phase Change') {
     return processPhaseChange(e, { context, project, version }, { github, log });
-  } else if (type === 'CodeBuild Build State Change') {
+  } if (type === 'CodeBuild Build State Change') {
     return processStateChange(e, { context, project, version }, { github, log });
   }
   log.warn({ type }, 'unknown event type');

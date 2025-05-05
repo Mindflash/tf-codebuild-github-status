@@ -6,6 +6,11 @@ import sinon from 'sinon';
 
 import { handler, SUCCESS } from '../../src';
 import container from '../../src/container';
+
+container.register({
+  name: 'ssm',
+  factory: () => global.mocks.mockSSM
+});
 import phaseEvent from '../fixtures/build-phase-change.json';
 import stateEvent from '../fixtures/build-state-change.json';
 

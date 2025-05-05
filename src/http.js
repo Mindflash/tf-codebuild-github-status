@@ -23,7 +23,7 @@ export default function (config, log) {
 
   // configure failed response logging
   client.interceptors.response.use(
-    res => Promise.resolve(res),
+    (res) => Promise.resolve(res),
     (err) => {
       const data = get(err, 'response.data');
       const status = get(err, 'response.status');

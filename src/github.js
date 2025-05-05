@@ -38,11 +38,11 @@ export default function (config, http) {
    * @return {Promise}
    */
   async function updateStatus({
-    context, description, project, state, target_url, version,
+    context, description, project, state, targetUrl, version,
   }) {
     const sha = await getShaForPr({ project, version });
     return http.post(`/repos/${owner}/${project}/statuses/${sha}`, {
-      state, target_url, description, context,
+      state, targetUrl, description, context,
     });
   }
 
