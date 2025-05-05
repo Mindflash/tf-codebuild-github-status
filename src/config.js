@@ -10,14 +10,16 @@ export const inject = {
   require: ['ssm'],
 };
 
-export default async function (ssm) {
+export default async function configModule(ssm) {
   // fetch configuration from secure parameter store
   const data = await Promise.race([
     ssm.getParameters({
       Names: process.env.CONFIG_PARAMETER_NAMES.split(','),
       WithDecryption: true,
     }).promise(),
-    new Promise(resolve => setTimeout(resolve, 30000)),
+    new Promise((resolve) => {
+      setTimeout(resolve, 30000);
+    }),
   ]);
 
   // parse configuration and merge together

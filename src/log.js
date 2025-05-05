@@ -11,7 +11,7 @@ export const inject = {
   require: ['config'],
 };
 
-export default function (config) {
+export default function logModule(config) {
   const options = config.get('log');
   return createLogger({ ...options, name, version });
 }

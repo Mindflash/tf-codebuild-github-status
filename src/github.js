@@ -10,7 +10,7 @@ export const inject = {
   require: ['config', 'http'],
 };
 
-export default function (config, http) {
+export default function githubModule(config, http) {
   const owner = config.get('github.owner');
 
   /**
@@ -33,16 +33,16 @@ export default function (config, http) {
    * @param  {String}  params.description - status description
    * @param  {String}  params.project     - project name
    * @param  {String}  params.state       - status state
-   * @param  {String}  params.target_url  - status target url
+   * @param  {String}  params.targetUrl  - status target url
    * @param  {String}  params.version     - source version
    * @return {Promise}
    */
   async function updateStatus({
-    context, description, project, state, target_url, version,
+    context, description, project, state, targetUrl, version,
   }) {
     const sha = await getShaForPr({ project, version });
     return http.post(`/repos/${owner}/${project}/statuses/${sha}`, {
-      state, target_url, description, context,
+      state, targetUrl, description, context,
     });
   }
 

@@ -10,7 +10,7 @@ export const inject = {
   require: ['config', 'log'],
 };
 
-export default function (config, log) {
+export default function httpModule(config, log) {
   const client = axios.create({
     baseURL: config.get('github.url'),
     timeout: 1000,
@@ -23,7 +23,7 @@ export default function (config, log) {
 
   // configure failed response logging
   client.interceptors.response.use(
-    res => Promise.resolve(res),
+    (res) => Promise.resolve(res),
     (err) => {
       const data = get(err, 'response.data');
       const status = get(err, 'response.status');

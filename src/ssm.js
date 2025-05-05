@@ -8,7 +8,7 @@ export const inject = {
   name: 'ssm',
 };
 
-export default function () {
+export default function ssmModule() {
   const ssm = new AWS.SSM();
   return ssm;
 }
