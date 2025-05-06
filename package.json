@@ -1,6 +1,6 @@
 {
   "name": "tf-codebuild-github-status",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a node.js lambda function that updates github commit statuses based on codebuild events",
   "main": "./dist/index.js",
   "scripts": {
