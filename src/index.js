@@ -2,10 +2,7 @@
  * @file index.js
  * @overview lambda function entrypoint
  */
-import 'source-map-support/register';
-import get from 'lodash.get';
-
-import container from './container';
+import container from './container.js';
 
 export const ERROR = 'event:error';
 export const NOOP = 'event:noop';
@@ -13,14 +10,13 @@ export const SUCCESS = 'event:success';
 
 /**
  * Lambda function handler invoked by the lambda runtime
- * @param  {Object}   e    - lambda event
- * @param  {Object}   ctx  - lambda context object
- * @param  {Function} done - lambda callback
+ * @param  {Object}  e   - lambda event
+ * @param  {Object}  ctx - lambda context object
  * @return {Promise}
  */
-export async function handler(e, ctx, done) {
+export async function handler(e, ctx) {
   // freeze the node process immediately on exit
-  // see http://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-using-old-runtime.html
+  // see https://docs.aws.amazon.com/lambda/latest/dg/nodejs-context.html
   ctx.callbackWaitsForEmptyEventLoop = false;
   // load modules
   const modules = await container.load({
@@ -32,10 +28,10 @@ export async function handler(e, ctx, done) {
   try {
     const result = await processEvent(e, { ...modules, log });
     log.info({ result }, SUCCESS);
-    done(null, SUCCESS);
+    return SUCCESS;
   } catch (err) {
     log.error(err, ERROR);
-    done(err);
+    throw err;
   }
 }
 
@@ -50,19 +46,19 @@ export async function handler(e, ctx, done) {
  */
 export async function processEvent(e, { config, github, log }) {
   // get source version
-  const version = get(e, 'detail.additional-information.source-version');
-  const PR = /^pr\//g;
-  if (!PR.test(version)) {
+  const version = e?.detail?.['additional-information']?.['source-version'];
+  if (!/^pr\//.test(version)) {
     log.debug({ source_version: version }, 'skipping non PR event');
     return NOOP;
   }
   // extract common info and delegate to appropriate handler
-  const project = get(e, 'detail.project-name');
-  const type = get(e, 'detail-type');
+  const project = e?.detail?.['project-name'];
+  const type = e?.['detail-type'];
   const context = config.get('context', 'aws/codebuild');
   if (type === 'CodeBuild Build Phase Change') {
     return processPhaseChange(e, { context, project, version }, { github, log });
-  } else if (type === 'CodeBuild Build State Change') {
+  }
+  if (type === 'CodeBuild Build State Change') {
     return processStateChange(e, { context, project, version }, { github, log });
   }
   log.warn({ type }, 'unknown event type');
@@ -83,10 +79,10 @@ export async function processEvent(e, { config, github, log }) {
  */
 export async function processPhaseChange(e, { context, project, version }, { github, log }) {
   const status = 'pending';
-  const deepLink = get(e, 'detail.additional-information.logs.deep-link');
-  const phase = get(e, 'detail.completed-phase');
-  const phaseStatus = get(e, 'detail.completed-phase-status');
-  const phaseDuration = get(e, 'detail.completed-phase-duration-seconds');
+  const deepLink = e?.detail?.['additional-information']?.logs?.['deep-link'];
+  const phase = e?.detail?.['completed-phase'];
+  const phaseStatus = e?.detail?.['completed-phase-status'];
+  const phaseDuration = e?.detail?.['completed-phase-duration-seconds'];
   const description = `${phase} phase ${phaseStatus} after ${phaseDuration} second(s)`;
   return github.updateStatus({
     version,
@@ -108,17 +104,17 @@ export async function processPhaseChange(e, { context, project, version }, { git
  * @param  {Object} modules        - modules
  * @param  {Object} modules.github - github module
  * @param  {Object} modules.log    - log module
- * @return {Promise}         [description]
+ * @return {Promise}
  */
 export async function processStateChange(e, { context, project, version }, { github, log }) {
-  const state = get(e, 'detail.build-status');
+  const state = e?.detail?.['build-status'];
   let status = 'failure';
   if (state === 'IN_PROGRESS') {
     status = 'pending';
   } else if (state === 'SUCCEEDED') {
     status = 'success';
   }
-  const deepLink = get(e, 'detail.additional-information.logs.deep-link');
+  const deepLink = e?.detail?.['additional-information']?.logs?.['deep-link'];
   let description;
   switch (status) {
     case 'pending':

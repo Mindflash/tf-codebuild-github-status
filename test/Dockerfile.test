@@ -1,12 +1,12 @@
-FROM node:6
+FROM node:24.4.0
 
 RUN useradd --user-group --create-home --shell /bin/false app
 ENV HOME=/home/app
 WORKDIR $HOME/src
 
-COPY .babelrc .eslintrc.json package.json npm-shrinkwrap.json webpack.config.js ./
-RUN npm install
+COPY package.json package-lock.json eslint.config.js ./
+RUN npm ci
 COPY ./src ./src
 COPY ./test ./test
 
-CMD npm test
+CMD ["npm", "test"]

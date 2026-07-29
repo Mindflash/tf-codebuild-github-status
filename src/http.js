@@ -3,7 +3,6 @@
  * @overview github http client
  */
 import axios from 'axios';
-import get from 'lodash.get';
 
 export const inject = {
   name: 'http',
@@ -23,13 +22,13 @@ export default function (config, log) {
 
   // configure failed response logging
   client.interceptors.response.use(
-    res => Promise.resolve(res),
+    (res) => Promise.resolve(res),
     (err) => {
-      const data = get(err, 'response.data');
-      const status = get(err, 'response.status');
-      const method = get(err, 'config.method', 'UNKNOWN');
-      const url = get(err, 'config.url');
-      const payload = get(err, 'config.data');
+      const data = err?.response?.data;
+      const status = err?.response?.status;
+      const method = err?.config?.method ?? 'UNKNOWN';
+      const url = err?.config?.url;
+      const payload = err?.config?.data;
       const msg = `${method} -- ${url} failed with status (${status}) and data: ${JSON.stringify(data)}`;
       log.error({ data: payload }, msg);
       return Promise.reject(err);

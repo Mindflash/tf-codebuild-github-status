@@ -2,9 +2,9 @@
  * @module log
  * @overview lambda function logger
  */
-import { createLogger } from 'bunyan';
+import bunyan from 'bunyan';
 
-import { name, version } from '../package.json';
+import pkg from '../package.json' with { type: 'json' };
 
 export const inject = {
   name: 'log',
@@ -13,5 +13,5 @@ export const inject = {
 
 export default function (config) {
   const options = config.get('log');
-  return createLogger({ ...options, name, version });
+  return bunyan.createLogger({ ...options, name: pkg.name, version: pkg.version });
 }
