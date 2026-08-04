@@ -12,5 +12,11 @@ terraform {
   }
 }
 
+# explicit provider configuration: this directory runs as the root module in
+# the terraform-enterprise workspace, so no consuming root supplies a provider
+provider "aws" {
+  region = var.region
+}
+
 data "aws_caller_identity" "current" {
 }
