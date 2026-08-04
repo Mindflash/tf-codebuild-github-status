@@ -2,6 +2,7 @@
  * @module config
  * @overview encrypted configuration provider
  */
+import { GetParametersCommand } from '@aws-sdk/client-ssm';
 import get from 'lodash.get';
 import merge from 'lodash.merge';
 
@@ -11,20 +12,17 @@ export const inject = {
 };
 
 export default async function (ssm) {
-  // fetch configuration from secure parameter store
-  const data = await Promise.race([
-    ssm.getParameters({
+  // fetch configuration from secure parameter store, aborting after 30 seconds
+  const data = await ssm.send(
+    new GetParametersCommand({
       Names: process.env.CONFIG_PARAMETER_NAMES.split(','),
       WithDecryption: true,
-    }).promise(),
-    new Promise(resolve => setTimeout(resolve, 30000)),
-  ]);
+    }),
+    { abortSignal: AbortSignal.timeout(30000) },
+  );
 
   // parse configuration and merge together
-  const config = data.Parameters.reduce((acc, p) => {
-    merge(acc, JSON.parse(p.Value));
-    return acc;
-  }, {});
+  const config = data.Parameters.reduce((acc, p) => merge(acc, JSON.parse(p.Value)), {});
 
   return {
     /**

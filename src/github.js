@@ -3,8 +3,6 @@
  * @overview implements functionality related to describing and updating github
  * pull requests
  */
-import get from 'lodash.get';
-
 export const inject = {
   name: 'github',
   require: ['config', 'http'],
@@ -23,7 +21,7 @@ export default function (config, http) {
   async function getShaForPr({ project, version }) {
     const number = version.split('/')[1];
     const { data } = await http.get(`/repos/${owner}/${project}/pulls/${number}`);
-    return get(data, 'head.sha');
+    return data?.head?.sha;
   }
 
   /**
