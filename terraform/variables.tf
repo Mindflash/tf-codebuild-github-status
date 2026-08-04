@@ -1,3 +1,10 @@
+variable "access_key" {
+  type        = string
+  description = "aws access key id; falls back to ambient credentials (env vars) when empty"
+  default     = ""
+  sensitive   = true
+}
+
 variable "config_parameter_names" {
   type        = string
   description = "name of terraform managed ssm parameter"
@@ -39,6 +46,13 @@ variable "s3_bucket" {
 variable "s3_key" {
   type        = string
   description = "lambda artifact s3 key"
+}
+
+variable "secret_key" {
+  type        = string
+  description = "aws secret access key; falls back to ambient credentials (env vars) when empty"
+  default     = ""
+  sensitive   = true
 }
 
 variable "timeout" {
