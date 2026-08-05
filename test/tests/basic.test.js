@@ -189,5 +189,7 @@ describe('basic', function () {
     expect(err).to.have.nested.property('response.status', 500);
     expect(spy.callCount).to.equal(1);
     expect(spy.firstCall.args[1]).to.match(/failed with status \(500\)/);
+    expect(err.config.headers.Authorization).to.equal('[redacted]');
+    expect(JSON.stringify(err.toJSON())).to.not.include(this.config.get('github.token'));
   });
 });
