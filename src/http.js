@@ -29,6 +29,12 @@ export default function (config, log) {
       const method = err?.config?.method ?? 'UNKNOWN';
       const url = err?.config?.url;
       const payload = err?.config?.data;
+      // the lambda runtime serializes unhandled errors (via AxiosError.toJSON)
+      // into cloudwatch logs, request config included — strip credentials
+      // before anything logs so the github token can never reach the logs
+      if (err?.config?.headers) {
+        err.config.headers.Authorization = '[redacted]';
+      }
       const msg = `${method} -- ${url} failed with status (${status}) and data: ${JSON.stringify(data)}`;
       log.error({ data: payload }, msg);
       return Promise.reject(err);
