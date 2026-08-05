@@ -69,7 +69,12 @@ $ aws ssm put-parameter --name /secrets/codebuild-trigger/custom --type SecureSt
 ```
 
 ## Deploying
-Via terraform
+Via terraform. The module includes an account-wide EventBridge rule forwarding
+every `CodeBuild Build State Change` event to the function, plus the matching
+invoke permission — consumers do not create per-project rules or permissions.
+The function ignores builds whose source version is not a pull request (`pr/N`),
+and resolves the GitHub repository from the CodeBuild project name, so project
+names must match repository names.
 ```
 module "codebuild_trigger" {
   source                     = "git::git@github.com:cludden/tf-codebuild-github-status.git//terraform?ref={version}"
