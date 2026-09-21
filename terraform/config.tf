@@ -1,13 +1,16 @@
 terraform {
   # nodejs24.x lambda runtime support requires a recent AWS provider, which in
   # turn requires terraform >= 1.x (plugin protocol 5+); terraform 0.11 cannot
-  # plan this module
+  # plan this module. validated with terraform 1.16.3.
   required_version = ">= 1.4.2"
 
   required_providers {
     aws = {
-      source  = "hashicorp/aws"
-      version = ">= 6.0"
+      source = "hashicorp/aws"
+      # stay within the 6.x major: an unbounded ">= 6.0" would silently adopt a
+      # future 7.0 with breaking changes. the exact patch release is recorded in
+      # .terraform.lock.hcl; run "terraform init -upgrade" to move it.
+      version = "~> 6.0"
     }
   }
 }
@@ -20,5 +23,4 @@ provider "aws" {
   secret_key = var.secret_key
 }
 
-data "aws_caller_identity" "current" {
-}
+data "aws_caller_identity" "current" {}

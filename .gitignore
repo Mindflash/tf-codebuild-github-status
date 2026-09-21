@@ -98,3 +98,9 @@ $RECYCLE.BIN/
 
 # KDE directory preferences
 .directory
+
+# Terraform: local working data, never state
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log

@@ -71,23 +71,61 @@ $ aws ssm put-parameter --name /secrets/codebuild-trigger/custom --type SecureSt
 ## Deploying
 Via terraform. The module includes an account-wide EventBridge rule forwarding
 every `CodeBuild Build State Change` event to the function, plus the matching
-invoke permission — consumers do not create per-project rules or permissions.
+invoke permission, so consumers do not create per-project rules or permissions.
 The function ignores builds whose source version is not a pull request (`pr/N`),
 and resolves the GitHub repository from the CodeBuild project name, so project
 names must match repository names.
+
+### Requirements
+- Terraform `>= 1.4.2`. Validated with `1.16.3`, which is the version the
+  `terraform-enterprise` workspace should be pinned to (`~> 1.16.0`).
+- AWS provider `~> 6.0`. The exact release is recorded in
+  `terraform/.terraform.lock.hcl` with checksums for `linux_amd64` (Terraform
+  Cloud runners), `darwin_arm64` and `darwin_amd64`. To move it, run
+  `terraform init -upgrade` and then
+  `terraform providers lock -platform=linux_amd64 -platform=darwin_arm64 -platform=darwin_amd64`,
+  and commit the updated lock file.
+- Terraform `0.11` cannot plan this module. The configuration is HCL2, and the
+  newest provider `0.11` can load (`2.70.x`) rejects the `nodejs24.x` runtime.
+
+### Terraform Cloud (root module)
+The `terraform/` directory runs directly as the root module of the
+`terraform-enterprise` workspace and declares its own `aws` provider. Set these
+Terraform variables on the workspace: `name`, `region`,
+`config_parameter_names` (comma-separated SSM parameter names), `s3_bucket`,
+`s3_key`, and optionally `debug`, `memory_size`, `node_env`, `timeout`.
+Credentials come from the sensitive `access_key` / `secret_key` variables, or
+from the `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` environment variables
+when those two are left empty.
+
+### As a child module
 ```
 module "codebuild_trigger" {
-  source                     = "git::git@github.com:cludden/tf-codebuild-github-status.git//terraform?ref={version}"
-  config_parameter_name      = "/secrets/codebuild-trigger"
-  debug                      = ""
-  memory_size                = 128
-  name                       = "codebuild-github-status"
-  node_env                   = "production"
-  region                     = "us-west-2"
-  s3_bucket                  = "my-artifact-bucket"
-  s3_key                     = "tf-codebuild-github-status/${var.version}/index.zip"
-  timeout                    = 10
+  source                 = "git::git@github.com:cludden/tf-codebuild-github-status.git//terraform?ref={version}"
+  config_parameter_names = "/secrets/codebuild-trigger"
+  debug                  = ""
+  memory_size            = 128
+  name                   = "codebuild-github-status"
+  node_env               = "production"
+  region                 = "us-west-2"
+  s3_bucket              = "my-artifact-bucket"
+  s3_key                 = "tf-codebuild-github-status/${var.version}/index.zip"
+  timeout                = 10
 }
+```
+Because the module carries its own provider block it does not inherit the
+caller's `aws` provider: `region` is required and credentials follow the
+variable / environment fallback described above. Terraform does not allow
+`count`, `for_each` or `depends_on` on a module that declares a provider.
+
+### Validating locally
+No AWS credentials are needed. The test suite mocks the provider.
+```shell
+$ cd terraform
+$ terraform init -backend=false
+$ terraform fmt -check -recursive
+$ terraform validate
+$ terraform test
 ```
 
 ## License
